@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="administratorWeb" />
+        <module name="userWeb" />
+        <module name="module" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="administratorWeb" target="17" />
+      <module name="demo" target="17" />
+      <module name="module" target="17" />
+      <module name="service" target="17" />
+      <module name="userWeb" target="17" />
+      <module name="UserWeb" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="UserWeb" options="-parameters" />
+      <module name="administratorWeb" options="-parameters" />
+      <module name="demo" options="" />
+      <module name="module" options="-parameters" />
+      <module name="service" options="-parameters" />
+      <module name="userWeb" options="-parameters" />
+    </option>
+  </component>
+</project>
