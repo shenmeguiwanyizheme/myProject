@@ -39,7 +39,7 @@ public class MybatisPlusGenerator {
         pc.setParent("com.example");
         pc.setEntity("pojo");
         pc.setMapper("mapper");
-        pc.setXml("classpath:com/example/mapper");
+        pc.setXml("classpath:com/example/%sMapper.xml");
         mpg.setPackageInfo(pc);
 
 
