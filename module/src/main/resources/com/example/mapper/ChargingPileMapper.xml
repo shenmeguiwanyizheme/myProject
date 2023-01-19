@@ -37,6 +37,7 @@
         <!--        <selectKey keyProperty="entity.id" resultType="java.math.BigInteger">-->
         <!--            select last_insert_id()-->
         <!--        </selectKey>-->
+
     </insert>
 
     <!--不能改变插入时的字段在数据的相对顺序 -->

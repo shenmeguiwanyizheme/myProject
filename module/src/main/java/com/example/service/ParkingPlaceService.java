@@ -1,8 +1,5 @@
 package com.example.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.mapper.ParkingPlaceMapper;
 import com.example.pojo.ParkingPlace;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +24,10 @@ public class ParkingPlaceService {
     }
 
     public int update(BigInteger id, String location, int updateTime) throws Exception {
-
-        UpdateWrapper<ParkingPlace> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.set("update_time", updateTime).set("location", location).eq("id", id);
-        int res = mapper.update(null, updateWrapper);
+        if (id == null) throw new RuntimeException("要更新的充电桩位置id不存在");
+        ParkingPlace entity = new ParkingPlace();
+        entity.setLocation(location).setId(id).setUpdateTime(updateTime);
+        int res = mapper.update(entity);
         if (res == 0) {
             throw new RuntimeException("要更新的充电桩位置id不存在");
         }
@@ -38,22 +35,37 @@ public class ParkingPlaceService {
     }
 
     public int delete(BigInteger id, int updateTime) throws Exception {
-        QueryWrapper<ParkingPlace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", id);
-        ParkingPlace p = new ParkingPlace().setIsDeleted(1).setUpdateTime(updateTime);
-        int res = mapper.update(p, queryWrapper);
+        if (id == null) {
+            throw new RuntimeException("要删除的充电桩id不存在");
+        }
+        ParkingPlace p = new ParkingPlace();
+        p.setIsDeleted(1).setUpdateTime(updateTime);
+        int res = mapper.update(p);
         if (res == 0) {
             throw new RuntimeException("要删除的充电桩id不存在");
         }
         return res;
     }
 
-    public ParkingPlace getByIdForAdministrator(BigInteger id) throws Exception {
+    public ParkingPlace getByIdForUser(BigInteger id) throws Exception {
         if (id == null) throw new RuntimeException("要查询的充电桩位置id不存在");
-        QueryWrapper<ParkingPlace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", id);//没删除的和删除的全部要查出来
-        ParkingPlace res = mapper.selectOne(queryWrapper);
+        ParkingPlace res = mapper.getById(id);
         if (res == null) {
+            throw new RuntimeException("充电桩所在位置id不存在");
+        }
+        return res;
+    }
+
+    public ParkingPlace getByIdForAdministrator(BigInteger id) throws Exception {
+        if (id == null) {
+            log.error("service: id为空");
+            throw new RuntimeException("要查询的充电桩位置id不存在");
+        }
+
+        ParkingPlace res = mapper.extractById(id);
+        System.out.println("service 66 row  res:" + res);
+        if (res == null) {
+            log.error("service 查询结果数为0");
             throw new RuntimeException("充电桩所在位置id不存在");
         }
         return res;
@@ -61,24 +73,20 @@ public class ParkingPlaceService {
     //interceptor 拦截器
 
     public List<ParkingPlace> getListForAdministrator(Integer page, Integer pageSize) {
-        Page<ParkingPlace> pageObject = new Page<>(page, pageSize);
-        mapper.selectPage(pageObject, null);
-        return pageObject.getRecords();
+        int from = (page - 1) * pageSize;
+        return mapper.getListForAdministrator(from, pageSize);
     }
 
     public BigInteger getTotalCountForAdministrator(Integer page, Integer pageSize) {
-        Page<ParkingPlace> pageObject = new Page<>(page, pageSize);
-        mapper.selectPage(pageObject, null);
-        return BigInteger.valueOf(pageObject.getTotal());
+
+        int from = (page - 1) * pageSize;
+        return mapper.getTotalCountForAdministrator(from, pageSize);
 
     }
 
     public List<ParkingPlace> getListForUser(Integer page, Integer pageSize) {
-        QueryWrapper<ParkingPlace> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("is_deleted", 0);
-        Page<ParkingPlace> pageObject = new Page<>(page, pageSize);
-        mapper.selectPage(pageObject, queryWrapper);
-        return pageObject.getRecords();
+        int from = (page - 1) * pageSize;
+        return mapper.getListForUser(from, pageSize);
     }
 
 //    public void forTest() {

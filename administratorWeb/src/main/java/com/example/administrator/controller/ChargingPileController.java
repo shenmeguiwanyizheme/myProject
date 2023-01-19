@@ -38,16 +38,20 @@ public class ChargingPileController {
         List<ChargingPile> list1 = chargingPileService.getChargingPileListForAdministrator(serialNumber, page, pId);//功能在前对象在后
         System.out.println(list1);
         if (list1.size() == 0) {
+            //异常处理规范
 
             return new ChargingPileBaseInfoListVO().setTotal(chargingPileService.getTotalCountForAdministrator(serialNumber, pId)).setPageSize(5);
         }
         List<ChargingPileBaseInfoVO> list2 = new ArrayList<>();
-        log.info(list1.toString());
+        log.info("controller" + list1.toString());
         for (ChargingPile entity : list1) {
             ParkingPlace p = null;
             try {
+
                 p = parkingPlaceService.getByIdForAdministrator(entity.getParkingPlace());
+                System.out.println("controller 50 row  p:" + p);
             } catch (Exception ex) {
+                log.error("controller 52行" + ex.getMessage());
                 continue;
             }
             ChargingPileBaseInfoVO chargingPileBaseInfoVO = new ChargingPileBaseInfoVO();
@@ -55,11 +59,17 @@ public class ChargingPileController {
             chargingPileBaseInfoVO.setImage(entity.getPhotoUrlList().split("$")[0]);
             chargingPileBaseInfoVO.setRow(entity.getRow());
             chargingPileBaseInfoVO.setCol(entity.getCol());
-            // chargingPileBaseInfoVO.setParkingPlace(entity.getParkingPlace());
+            try {
+                chargingPileBaseInfoVO.setParkingPlace(parkingPlaceService.getByIdForAdministrator(entity.getParkingPlace()).getLocation());
+            } catch (Exception e) {
+                log.error("controller 63行" + e.getMessage());
+                continue;
+            }
             chargingPileBaseInfoVO.setIsDeleted(entity.getIsDeleted() == 0 ? false : true);
             list2.add(chargingPileBaseInfoVO);
         }
         ChargingPileBaseInfoListVO res = new ChargingPileBaseInfoListVO();
+        log.info("controller" + list2);
         res.setChargingPiles(list2);
         res.setPageSize(5);
         res.setTotal(chargingPileService.getTotalCountForAdministrator(serialNumber, pId));

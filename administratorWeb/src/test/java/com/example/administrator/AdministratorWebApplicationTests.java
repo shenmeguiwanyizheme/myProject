@@ -22,8 +22,9 @@ class AdministratorWebApplicationTests {
     @Test
     void contextLoads() {
         System.out.println(chargingPileMapper.delete(BigInteger.valueOf(300), (int) (System.currentTimeMillis() / 1000)));
-        ParkingPlace p = parkingPlaceMapper.selectById(10);
-        System.out.println(p);
+        ParkingPlace p = parkingPlaceMapper.extractById(BigInteger.valueOf(13));
+        ;
+        System.out.println("p=  " + p);
 
         try {
             int a = 1 / 0;
