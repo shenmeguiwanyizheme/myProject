@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.chargingpile.ChargingPileMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="entity.id" keyColumn="id">
+        insert into charging_pile(
+        <if test="entity.serialNumber!=null and entity.serialNumber!=''">serial_number,</if>
+        <if test="entity.canUsedTime!=null">can_used_time,</if>
+        <if test="entity.row!=null">`row`,</if>
+        <if test="entity.col!=null">col,</if>
+        <if test="entity.parkingPlace!=null">parking_place,</if>
+        <if test="entity.beginUsedTime!=null">begin_used_time,</if>
+        <if test="entity.chargingType!=null">charging_type,</if>
+        <if test="entity.price!=null">price,</if>
+        <if test="entity.power!=null">power,</if>
+        <if test="entity.photoUrlList!=null and entity.photoUrlList != ''">photo_url_list,</if>
+        <if test="entity.tag!=null and entity.tag!=''">tag,</if>
+        <if test="entity.createTime!=null">create_time,</if>
+        <if test="entity.updateTime!=null">update_time,</if>
+        is_deleted)
+        values (
+        <if test="entity.serialNumber!=null and entity.serialNumber!=''">#{entity.serialNumber},</if>
+        <if test="entity.canUsedTime!=null">#{entity.canUsedTime},</if>
+        <if test="entity.row!=null">#{entity.row},</if>
+        <if test="entity.col!=null">#{entity.col},</if>
+        <if test="entity.parkingPlace!=null and entity.parkingPlace!=''">#{entity.parkingPlace},</if>
+        <if test="entity.beginUsedTime!=null">#{entity.beginUsedTime},</if>
+        <if test="entity.chargingType!=null">#{entity.chargingType},</if>
+        <if test="entity.price!=null">#{entity.price},</if>
+        <if test="entity.power!=null">#{entity.power},</if>
+        <if test="entity.photoUrlList!=null and entity.photoUrlList!=''">#{entity.photoUrlList},</if>
+        <if test="entity.tag!=null and entity.tag != ''">#{entity.tag},</if>
+        <if test="entity.createTime!=null">#{entity.createTime},</if>
+        <if test="entity.updateTime!=null">#{entity.updateTime},</if>
+        #{entity.isDeleted})
+        <!--        <selectKey keyProperty="entity.id" resultType="java.math.BigInteger">-->
+        <!--            select last_insert_id()-->
+        <!--        </selectKey>-->
+
+    </insert>
+
+    <!--不能改变插入时的字段在数据的相对顺序 -->
+    <!--    我擦，这里多写了一个逗号，报了一个错，我日-->
+    <!--  标签里标签外都要加对象名  -->
+    <!--   动态sql里的变量名，还是按照java来 -->
+    <update id="update" parameterType="com.example.pojo.chargingpile.ChargingPile">
+        update charging_pile set id=#{entity.id}
+        <if test="entity.row !=null">,`row` =#{entity.row}</if>
+        <if test="entity.col !=null">,col=#{entity.col}</if>
+        <if test="entity.parkingPlaceId !=null">,parking_place_id=#{entity.parkingPlaceId}</if>
+        <if test="entity.canUsed !=null">,can_used=#{entity.canUsed}</if>
+        <if test="entity.chargingType!=null">,charging_type=#{entity.chargingType}</if>
+        <if test="entity.price!=null">,price=#{entity.price}</if>
+        <if test="entity.power!=null">,power=#{entity.power}</if>
+        <!--   字符串要补充不是空串的检查,但实际上这里已经全部补齐了 -->
+        <if test="entity.updateTime!=null">,update_time=#{entity.updateTime}</if>
+        <if test="entity.photoUrlList!=null">,photo_url_list=#{entity.photoUrlList}</if>
+        <if test="entity.canUsedTime!=null">,can_used_time=#{entity.canUsedTime}</if>
+        <if test="entity.beginUsedTime!=null">,begin_used_time=#{entity.bginUsedTime}</if>
+        <if test="entity.serialNumber!=null">,serial_number=#{entity.serialNumber}</if>
+        <if test="entity.tag!=null and entity.tag!=''">,tag=#{entity.tag}</if>
+        where id=#{entity.id}<!--  这个地方好像漏了entity.-->
+    </update>
+    <select id="getChargingPileListForUser" resultType="com.example.pojo.chargingpile.ChargingPile">
+        select * from charging_pile
+        where parking_place_id in (${idList}) and is_deleted=0
+        <if test="sn!=null and sn!=''">and serial_number like concat('%',#{sn},'%')</if>
+        limit #{offset},#{pageSize}
+    </select>
+    <!--    -->
+    <select id="getTotalCountForAdministrator" resultType="int">
+        select count(*) from charging_pile
+        where
+        parking_place_id in (${idList})
+        -- count(*)查询的是符合where条件的所有最终表数据
+        <if test="sn !=null and sn!=''">and serial_number like concat('%',#{sn},'%')</if>
+    </select>
+    <!--    由于子查询的限制，只要是查询有结果，查出来的必然都是位置存在的充电桩，但是insert语句sql不能预先查询，所以必须是在controller层进行校验
+     要分情况进行编程-->
+    <select id="getChargingPileListForAdministrator" resultType="com.example.pojo.chargingpile.ChargingPile">
+        select * from charging_pile
+        where parking_place_id in (${idList})
+        <if test="sn !=null and sn!=''">and serial_number like concat('%',#{sn},'%')</if>
+        limit #{offset},#{pageSize}
+    </select>
+
+</mapper>

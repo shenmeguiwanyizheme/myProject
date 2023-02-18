@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.parkingplace.ParkingPlaceMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.example.pojo.parkingplace.ParkingPlace">
+        insert into parking_place(
+        <if test="entity.location!=null ">location,</if>
+        <if test="entity.createTime!=null ">create_time,</if>
+        <if test="entity.updateTime!=null and entity.updateTime!=''">update_time,</if>
+        is_deleted)
+        values(
+        <if test="entity.location!=null and entity.location!=''">#{ entity.location},</if>
+        <if test="entity.createTime!=null">#{ entity.createTime},</if>
+        <if test="entity.updateTime!=null">#{ entity.updateTime},</if>
+        #{ entity.isDeleted})
+    </insert>
+    <update id="update" parameterType="com.example.pojo.parkingplace.ParkingPlace">
+        update parking_place set id=#{ id }
+        <if test="entity.location!=null and entity.location!=''">,location=#{ entity.location}</if>
+        <if test="entity.createTime!=null">,create_time=#{ entity.createTime}</if>
+        <if test="entity.updateTime!=null">,update_time=#{ entity.updateTime}</if>
+        <if test="entity.isDeleted!=null ">,is_deleted=#{ entity.isDeleted}</if>
+        where id=#{entity. id}
+    </update>
+    <select id="getListForUser" resultType="com.example.pojo.parkingplace.ParkingPlace">
+        select *
+        from parking_place
+        where is_deleted=0
+        <if test="entity.location!=null and entity.location != ''">and location like concat('%',#{entity.location},'%')
+        </if>
+        limit #{offset},#{pageSize}
+    </select>
+    <select id="getListForAdministrator" resultType="com.example.pojo.parkingplace.ParkingPlace">
+        select *
+        from parking_place
+        where 1=1
+        <if test="entity.location!=null and entity.location != ''">and location like concat('%',#{entity.location},'%')
+        </if>
+        limit #{offset},#{pageSize}
+    </select>
+    <select id="getTotalCountForAdministrator" resultType="java.lang.Integer">
+        select count(*)
+        from parking_place
+        where 1=1
+        <if test="entity.location!=null and entity.location != ''">and location like concat('%',#{entity.location},'%')
+        </if>
+    </select>
+</mapper>
