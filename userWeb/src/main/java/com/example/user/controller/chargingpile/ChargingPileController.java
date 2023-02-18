@@ -108,9 +108,7 @@ public class ChargingPileController {
         //这一步是在进行编码转换，从普通的字节数组转换成base64编码特征的字节数组
         String newWP = new String(oldRequestChargingPileWPVOBytes, StandardCharsets.UTF_8);
         resultVO.setChargingPiles(res).setWp(newWP);
-
         return new Response().setCode(200).setResultVO(resultVO);
-
     }
 
     @RequestMapping("/charging_pile/info")
@@ -120,7 +118,6 @@ public class ChargingPileController {
         ChargingPileSpecificInfoVO resultVO = new ChargingPileSpecificInfoVO();
         if (chargingPile == null) {
             log.error("no such id");
-            String resultJson = JSONObject.toJSONString(new ChargingPileListVO());
             return new Response().setCode(4004).setResultVO(resultVO);
         }
         ParkingPlace parkingPlace = parkingPlaceService.getById(chargingPile.getParkingPlaceId());
