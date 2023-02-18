@@ -72,7 +72,7 @@
         select count(*) from charging_pile
         where
         parking_place_id in (${idList})
-        -- count(*)查询的是符合where条件的所有最终表数据
+        <!-- count(*)查询的是符合where条件的所有最终表数据 -->
         <if test="sn !=null and sn!=''">and serial_number like concat('%',#{sn},'%')</if>
     </select>
     <!--    由于子查询的限制，只要是查询有结果，查出来的必然都是位置存在的充电桩，但是insert语句sql不能预先查询，所以必须是在controller层进行校验

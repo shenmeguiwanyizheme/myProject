@@ -1,9 +1,9 @@
-package com.example.user.controller;
+package com.example.user.controller.parkingplace;
 
-import com.example.pojo.ParkingPlace;
-import com.example.service.ParkingPlaceService;
-import com.example.user.domain.ParkingPlaceBaseInfoListVO;
-import com.example.user.domain.ParkingPlaceSpecificInfoVO;
+import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.service.parkingplace.ParkingPlaceService;
+import com.example.user.domain.parkingplace.ParkingPlaceBaseInfoListVO;
+import com.example.user.domain.parkingplace.ParkingPlaceSpecificInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

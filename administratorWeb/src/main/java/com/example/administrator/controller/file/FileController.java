@@ -1,6 +1,7 @@
-package com.example.administrator.controller;
+package com.example.administrator.controller.file;
 
-import com.example.administrator.domain.UpAndDownloadFileResultVO;
+import com.example.Response;
+import com.example.administrator.domain.file.UpAndDownloadFileResultVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,18 +22,21 @@ public class FileController {
     private String disableFileTypes;
 
     @RequestMapping("/upload_charging_pile_photo")
-    public UpAndDownloadFileResultVO uploadChargingPilePhoto(@RequestPart("file") MultipartFile uploadFile) {
+    public Response uploadChargingPilePhoto(@RequestPart("file") MultipartFile uploadFile) {
         String fileName = uploadFile.getOriginalFilename();
-        String suffixFileName = fileName.substring(fileName.lastIndexOf("."));
-        String[] disableFileTypeArray = disableFileTypes.split(",");
-        if (suffixFileName == null || suffixFileName.equals("")) {
-            log.error("文件后缀名不可为空");
-            return new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage("文件后缀名不可为空");
+        int suffixFileNameIndex = fileName.lastIndexOf(".");
+        if (suffixFileNameIndex == fileName.length() || suffixFileNameIndex == -1) {
+            UpAndDownloadFileResultVO resultVO = new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage("文件后缀名不可为空");
+            return new Response().setCode(4015).setResultVO(resultVO);
         }
+        String suffixFileName = fileName.substring(suffixFileNameIndex + 1);
+        log.info(suffixFileName);
+        String[] disableFileTypeArray = disableFileTypes.split(",");
         for (String disableFile : disableFileTypeArray) {
             if (disableFile.equals(suffixFileName)) {
                 log.error("该文件类型不可上传");
-                return new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage("该文件类型不可上传");
+                UpAndDownloadFileResultVO resultVO = new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage("该文件类型不可上传");
+                return new Response().setCode(4012).setResultVO(resultVO);
             }
             //实际上这种方式并不是很安全，当出现篡改后缀名或没有后缀名的时候，仍然会被攻击
             //最稳妥的做法是查看该文件的前几个字节来判断文件的类型
@@ -45,18 +49,21 @@ public class FileController {
                 storeFile.createNewFile();
             } catch (IOException exception) {
                 log.error("文件创建失败" + exception.getMessage());
-                return new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage(exception.getMessage());
+                UpAndDownloadFileResultVO resultVO = new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage(exception.getMessage());
+                return new Response().setCode(4013).setResultVO(resultVO);
             }
         }
         try {
             uploadFile.transferTo(storeFile);
         } catch (IOException exception) {
             log.error("文件传输失败" + exception.getMessage());
-            return new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage(exception.getMessage());
+            UpAndDownloadFileResultVO resultVO = new UpAndDownloadFileResultVO().setIsSuccessed(false).setErrorMessage(exception.getMessage());
+            return new Response().setCode(4014).setResultVO(resultVO);
         }
         //DigestUtils.md5Digest(filePath.getBytes(StandardCharsets.UTF_8));
-        return new UpAndDownloadFileResultVO().setIsSuccessed(true).setStoreUrl(filePath);
+        UpAndDownloadFileResultVO resultVO = new UpAndDownloadFileResultVO().setIsSuccessed(true).setStoreUrl(filePath);
+        return new Response().setCode(200).setResultVO(resultVO);
     }
 
-   
+
 }

@@ -1,4 +1,4 @@
-package com.example.administrator.domain;
+package com.example.administrator.domain.chargingpile;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

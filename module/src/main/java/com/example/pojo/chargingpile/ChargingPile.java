@@ -1,4 +1,4 @@
-package com.example.pojo;
+package com.example.pojo.chargingpile;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

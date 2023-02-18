@@ -1,5 +1,6 @@
-package com.example.administrator.domain;
+package com.example;
 
+import com.example.constSetting.ResponseCodeSetting;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -7,6 +8,13 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class Response {
     private Integer code;
-    private String msg;
-    private String result;
+    private String Msg;
+    private Object resultVO;
+
+    public Response addCodeAndMsgByCode(int code) {
+        this.setCode(code);
+        this.setMsg(ResponseCodeSetting.getCodeMessage(code
+        ));
+        return this;
+    }
 }

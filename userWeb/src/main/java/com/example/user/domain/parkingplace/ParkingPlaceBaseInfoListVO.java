@@ -1,5 +1,6 @@
-package com.example.user.domain;
+package com.example.user.domain.parkingplace;
 
+import com.example.user.domain.chargingpile.ChargingPileSpecificInfoVO;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

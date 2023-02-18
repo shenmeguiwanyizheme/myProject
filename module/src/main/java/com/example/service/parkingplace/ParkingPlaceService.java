@@ -1,7 +1,7 @@
-package com.example.service;
+package com.example.service.parkingplace;
 
 import com.example.mapper.parkingplace.ParkingPlaceMapper;
-import com.example.pojo.ParkingPlace;
+import com.example.pojo.parkingplace.ParkingPlace;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -82,6 +82,11 @@ public class ParkingPlaceService {
     public List<ParkingPlace> getListForAdministratorByIdList(int page, int pageSize, String idList) {
         int offset = (page - 1) * pageSize;
         return mapper.getListForAdministratorByIdList(offset, pageSize, idList);
+    }
+
+    public List<ParkingPlace> getListForUserByIdList(int page, int pageSize, String idList) {
+        int offset = (page - 1) * pageSize;
+        return mapper.getListForUserByIdList(offset, pageSize, idList);
     }
 //    public void forTest() {
 //        ParkingPlace p;

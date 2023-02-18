@@ -1,8 +1,9 @@
-package com.example.service;
+package com.example.service.chargingpile;
 
 import com.example.mapper.chargingpile.ChargingPileMapper;
-import com.example.pojo.ChargingPile;
-import com.example.pojo.ParkingPlace;
+import com.example.pojo.chargingpile.ChargingPile;
+import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.service.parkingplace.ParkingPlaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

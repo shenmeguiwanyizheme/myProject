@@ -1,4 +1,4 @@
-package com.example.pojo;
+package com.example.pojo.parkingplace;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

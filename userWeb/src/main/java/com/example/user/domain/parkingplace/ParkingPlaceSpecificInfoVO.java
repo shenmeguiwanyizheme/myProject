@@ -1,4 +1,4 @@
-package com.example.user.domain;
+package com.example.user.domain.parkingplace;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

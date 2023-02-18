@@ -1,23 +1,27 @@
-package com.example.mapper;
+package com.example.mapper.user;
 
-import com.example.pojo.User;
+import com.example.pojo.user.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
+import java.math.BigInteger;
 
 @Mapper
 public interface UserMapper {
-    public List<User> queryAll();
+    User getById(BigInteger id);
 
-    public int add(User user);
+    @Select("select * from user where id=#{id}")
+    User extractById(@Param("id") BigInteger id);
 
-    public User queryByName(String name);
+    @Select("select * from user where username =#{username}")
+    User extractByUsername(@Param("username") String username);
 
-    //为了实现update方法，其实是要求数据库中的每一行有一个一定不会变的列，可以说是主键列吧
-    //但是也可以采用第二种方法，也就是参数变为两个，第一个是之前的信息，第二个是带更新的信息
-    public int update(User user);
+    int update(@Param("entity") User user);
 
-    public int delete(User user);
+    int delete(@Param("entity") User user);
+
+    int insert(@Param("entity") User user);
 
 
 }

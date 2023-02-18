@@ -1,6 +1,6 @@
-package com.example.mapper;
+package com.example.mapper.parkingplace;
 
-import com.example.pojo.ParkingPlace;
+import com.example.pojo.parkingplace.ParkingPlace;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -43,4 +43,7 @@ public interface ParkingPlaceMapper {
 
     @Select("select * from parking_place where id in (${idList})")
     List<ParkingPlace> getListForAdministratorByIdList(@Param("offset") Integer offset, @Param("pageSize") Integer pageSize, @Param("idList") String idList);
+
+    @Select("select * from parking_place where id in (${idList}) and is_deleted=0)")
+    List<ParkingPlace> getListForUserByIdList(@Param("offset") Integer offset, @Param("pageSize") Integer pageSize, @Param("idList") String idList);
 }

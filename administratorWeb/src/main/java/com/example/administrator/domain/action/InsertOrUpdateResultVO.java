@@ -1,4 +1,4 @@
-package com.example.administrator.domain;
+package com.example.administrator.domain.action;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,5 +11,5 @@ public class InsertOrUpdateResultVO {
     private Boolean isSuccessed;
     private BigInteger id;
     private String errorMessage;
-    
+
 }

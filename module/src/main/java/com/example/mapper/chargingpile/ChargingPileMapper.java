@@ -1,6 +1,6 @@
-package com.example.mapper;
+package com.example.mapper.chargingpile;
 
-import com.example.pojo.ChargingPile;
+import com.example.pojo.chargingpile.ChargingPile;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

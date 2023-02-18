@@ -1,11 +1,12 @@
-package com.example.administrator.controller;
+package com.example.administrator.controller.parkigplace;
 
-import com.example.administrator.domain.DeleteResultVO;
-import com.example.administrator.domain.InsertOrUpdateResultVO;
-import com.example.administrator.domain.ParkingPlaceBaseInfoListVO;
-import com.example.administrator.domain.ParkingPlaceSpecificInfoVO;
-import com.example.pojo.ParkingPlace;
-import com.example.service.ParkingPlaceService;
+import com.example.Response;
+import com.example.administrator.domain.action.DeleteResultVO;
+import com.example.administrator.domain.action.InsertOrUpdateResultVO;
+import com.example.administrator.domain.parkingplace.ParkingPlaceBaseInfoListVO;
+import com.example.administrator.domain.parkingplace.ParkingPlaceSpecificInfoVO;
+import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.service.parkingplace.ParkingPlaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,26 +30,28 @@ public class ParkingPlaceController {
     }
 
     @RequestMapping("/parking_place/update")
-    public InsertOrUpdateResultVO parkingPlaceUpdate(@RequestParam("id") BigInteger id, @RequestParam("location") String location) {
+    public Response parkingPlaceUpdate(@RequestParam("id") BigInteger id, @RequestParam("location") String location) {
         try {
 
             ParkingPlace parkingPlace = parkingPlaceService.extractById(id);
             if (parkingPlace == null) {
                 String errorMessage = "fail to update ,no such id";
                 log.error(errorMessage);
-                return new InsertOrUpdateResultVO()
+                InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                         .setIsSuccessed(false)
                         .setErrorMessage(errorMessage);
+                return new Response().setCode(4010).setResultVO(resultVO);
             }
             parkingPlaceService.update(id, location);
-
-            return new InsertOrUpdateResultVO()
+            InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                     .setId(id)
                     .setIsSuccessed(true);
-        } catch (Exception e) {
-            return new InsertOrUpdateResultVO()
-                    .setErrorMessage("update failed" + e.getMessage())
+            return new Response().setCode(200).setResultVO(resultVO);
+        } catch (Exception exception) {
+            InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
+                    .setErrorMessage("update failed" + exception.getMessage())
                     .setIsSuccessed(false);
+            return new Response().setCode(6999).setResultVO(resultVO);
         }
         //异常处理还没做
     }
@@ -82,5 +85,4 @@ public class ParkingPlaceController {
         return new ParkingPlaceBaseInfoListVO().setParkingPlaces(resultVO).setTotal(total).setPageSize(5);
     }
 }
-
 //难点

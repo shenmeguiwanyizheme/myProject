@@ -1,34 +1,17 @@
-package com.example.pojo;
+package com.example.pojo.user;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.math.BigInteger;
+
+@Data
+@Accessors(chain = true)
 public class User {
-    public Integer id;
-    public Integer age;
-    public String name;
-    public Integer isDeleted;
-
-    public User(Integer id, Integer age, String name, Integer isDeleted) {
-        this.id = id;
-        this.age = age;
-        this.name = name;
-        this.isDeleted = isDeleted;
-    }
-    
-    public User(Integer id) {
-        this.id = id;
-    }
-
-    public User(Integer age, String name) {
-        this.age = age;
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", age=" + age +
-                ", name='" + name + '\'' +
-                ", isDeleted=" + isDeleted +
-                '}';
-    }
+    private BigInteger id;
+    private String username;
+    private String password;
+    private Integer createTime;
+    private Integer updateTime;
+    private Integer isDeleted;
 }

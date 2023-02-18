@@ -1,15 +1,16 @@
-package com.example.user.controller;
+package com.example.user.controller.chargingpile;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.Response;
 import com.example.constSetting.DateConsts;
-import com.example.pojo.ChargingPile;
-import com.example.pojo.ParkingPlace;
-import com.example.service.ChargingPileService;
-import com.example.service.ParkingPlaceService;
-import com.example.user.domain.ChargingPileBaseInfoVO;
-import com.example.user.domain.ChargingPileListVO;
-import com.example.user.domain.ChargingPileSpecificInfoVO;
-import com.example.user.domain.ChargingPileWPVO;
+import com.example.pojo.chargingpile.ChargingPile;
+import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.service.chargingpile.ChargingPileService;
+import com.example.service.parkingplace.ParkingPlaceService;
+import com.example.user.domain.chargingpile.ChargingPileBaseInfoVO;
+import com.example.user.domain.chargingpile.ChargingPileListVO;
+import com.example.user.domain.chargingpile.ChargingPileSpecificInfoVO;
+import com.example.user.domain.chargingpile.ChargingPileWPVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +32,8 @@ public class ChargingPileController {
     private ParkingPlaceService parkingPlaceService;
 
     @RequestMapping("/charging_pile/list")
-    public ChargingPileListVO chargingPileList(@RequestParam(name = "wp", required = false) String wp, @RequestParam(name = "serialNumber", required = false) String serialNumber,
-                                               @RequestParam(name = "place", required = false) String parkingPlace) {
+    public Response chargingPileList(@RequestParam(name = "wp", required = false) String wp, @RequestParam(name = "serialNumber", required = false) String serialNumber,
+                                     @RequestParam(name = "place", required = false) String parkingPlace) {
 
         log.info("接收到请求");
         int page = 0;
@@ -49,7 +50,8 @@ public class ChargingPileController {
                 log.info("解码后的参数" + oldRequestChargingPileWPVO);
             } catch (Exception exception) {
                 log.error("java对象创建失败" + exception.getMessage());
-                return new ChargingPileListVO();
+                return new Response().setCode(4011).setResultVO(new ChargingPileListVO());
+
             }
             page = oldRequestChargingPileWPVO.getPage();
             parkingPlace = oldRequestChargingPileWPVO.getPlace();
@@ -65,21 +67,30 @@ public class ChargingPileController {
             parkingPlace = parkingPlace.trim();
         }
         int pageSize = 5;
-        List<ChargingPile> temp = chargingPileService.getChargingPileListForUser(serialNumber, pageSize, page, parkingPlace);
-        log.info("database data list" + temp);
-        ChargingPileListVO userChargingPileListVO = new ChargingPileListVO();
-        if (temp.size() == pageSize) {
-            userChargingPileListVO.setIsEnd(false);
+        List<ChargingPile> chargingPileList = chargingPileService.getChargingPileListForUser(serialNumber, pageSize, page, parkingPlace);
+        log.info("database data list" + chargingPileList);
+        ChargingPileListVO resultVO = new ChargingPileListVO();
+        if (chargingPileList.size() == pageSize) {
+            resultVO.setIsEnd(false);
         } else
-            userChargingPileListVO.setIsEnd(true);
+            resultVO.setIsEnd(true);
         List<ChargingPileBaseInfoVO> res = new ArrayList<>();
-        for (ChargingPile e : temp) {
+        StringBuilder idListBuilder = new StringBuilder();
+        for (int index = 0; index < chargingPileList.size(); index++) {
+            if (index == 0) {
+                idListBuilder.append(chargingPileList.get(0).getParkingPlaceId());
+            } else {
+                idListBuilder.append("," + chargingPileList.get(index).getParkingPlaceId());
+            }
+        }
+        List<ParkingPlace> parkingPlaceList = parkingPlaceService.getListForUserByIdList(page, pageSize, idListBuilder.toString());
+        for (int index = 0; index < chargingPileList.size(); index++) {
             ChargingPileBaseInfoVO chargingPileBaseInfoVO = new ChargingPileBaseInfoVO();
-            chargingPileBaseInfoVO.setId(e.getId());
-            chargingPileBaseInfoVO.setRow(e.getRow());
-            chargingPileBaseInfoVO.setCol(e.getCol());
-            chargingPileBaseInfoVO.setParkingPlace(parkingPlaceService.getById(e.getParkingPlaceId()).getLocation());//实际上没有异常抛出
-            String[] s = e.getPhotoUrlList().split("$");
+            chargingPileBaseInfoVO.setId(chargingPileList.get(index).getId());
+            chargingPileBaseInfoVO.setRow(chargingPileList.get(index).getRow());
+            chargingPileBaseInfoVO.setCol(chargingPileList.get(index).getCol());
+            chargingPileBaseInfoVO.setParkingPlace(parkingPlaceList.get(index).getLocation());//实际上没有异常抛出
+            String[] s = chargingPileList.get(index).getPhotoUrlList().split("$");
             chargingPileBaseInfoVO.setImage(s[0]);
             res.add(chargingPileBaseInfoVO);
         }
@@ -88,56 +99,60 @@ public class ChargingPileController {
         try {
             newRequestChargingPileWPVOJson = JSONObject.toJSONString(newRequestChargingPileWPVO);
         } catch (Exception exception) {
-            log.error("java对象转成json失败");
-            return new ChargingPileListVO();
+            log.error("java对象转成json失败" + exception.getMessage());
+            return new Response().setCode(4011).setResultVO(new ChargingPileListVO());
+
         }
         Base64.Encoder urlEncoder = Base64.getUrlEncoder();
         byte[] oldRequestChargingPileWPVOBytes = urlEncoder.encode(newRequestChargingPileWPVOJson.getBytes(StandardCharsets.UTF_8));
         //这一步是在进行编码转换，从普通的字节数组转换成base64编码特征的字节数组
         String newWP = new String(oldRequestChargingPileWPVOBytes, StandardCharsets.UTF_8);
-        userChargingPileListVO.setChargingPiles(res).setWp(newWP);
-        return userChargingPileListVO;
+        resultVO.setChargingPiles(res).setWp(newWP);
+
+        return new Response().setCode(200).setResultVO(resultVO);
+
     }
 
     @RequestMapping("/charging_pile/info")
-    public ChargingPileSpecificInfoVO chargingPileInfo(@RequestParam(value = "id") BigInteger id) {
+    public Response chargingPileInfo(@RequestParam(value = "id") BigInteger id) {
 
         ChargingPile chargingPile = chargingPileService.getById(id);
+        ChargingPileSpecificInfoVO resultVO = new ChargingPileSpecificInfoVO();
         if (chargingPile == null) {
             log.error("no such id");
-            return new ChargingPileSpecificInfoVO();
+            String resultJson = JSONObject.toJSONString(new ChargingPileListVO());
+            return new Response().setCode(4004).setResultVO(resultVO);
         }
         ParkingPlace parkingPlace = parkingPlaceService.getById(chargingPile.getParkingPlaceId());
         if (parkingPlace == null) {
-            return new ChargingPileSpecificInfoVO();
+            return new Response().setCode(4010).setResultVO(resultVO);
         }
-        ChargingPileSpecificInfoVO chargingPileSpecificInfoVO = new ChargingPileSpecificInfoVO();
-        chargingPileSpecificInfoVO.setId(chargingPile.getId());
-        chargingPileSpecificInfoVO.setCol(chargingPile.getCol());
-        chargingPileSpecificInfoVO.setRow(chargingPile.getRow());
-        chargingPileSpecificInfoVO.setParkingPlace(parkingPlace.getLocation());
+        resultVO.setId(chargingPile.getId());
+        resultVO.setCol(chargingPile.getCol());
+        resultVO.setRow(chargingPile.getRow());
+        resultVO.setParkingPlace(parkingPlace.getLocation());
         if (chargingPile.getCanUsed() == 0) {//数据库里面默认是1
-            chargingPileSpecificInfoVO.setCanUsed(false);
+            resultVO.setCanUsed(false);
         } else {
-            chargingPileSpecificInfoVO.setCanUsed(true);
+            resultVO.setCanUsed(true);
         }
-        chargingPileSpecificInfoVO.setPrice(chargingPile.getPrice());
-        chargingPileSpecificInfoVO.setPower(chargingPile.getPower());
+        resultVO.setPrice(chargingPile.getPrice());
+        resultVO.setPower(chargingPile.getPower());
         String[] s = chargingPile.getPhotoUrlList().split("$");
         List<String> photoUrlList = new ArrayList<>();
         if (s.length != 0) {
             photoUrlList.addAll(Arrays.asList(s));
         }
-        chargingPileSpecificInfoVO.setPhotoUrlList(photoUrlList);
-        chargingPileSpecificInfoVO.setSerialNumber(chargingPile.getSerialNumber());
-        chargingPileSpecificInfoVO.setChargingType(chargingPile.getChargingType());
+        resultVO.setPhotoUrlList(photoUrlList);
+        resultVO.setSerialNumber(chargingPile.getSerialNumber());
+        resultVO.setChargingType(chargingPile.getChargingType());
         //把int的时间戳转换为用户能看懂的字符串
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateConsts.PATTERN);
         Date beginUsedDate = new Date(chargingPile.getBeginUsedTime() * 1000L);
-        chargingPileSpecificInfoVO.setBeginUsedTime(simpleDateFormat.format(beginUsedDate));
+        resultVO.setBeginUsedTime(simpleDateFormat.format(beginUsedDate));
         beginUsedDate.setTime(chargingPile.getCanUsedTime() * 1000L);//canUsedTime 是int类型
-        chargingPileSpecificInfoVO.setCanUsedTime(simpleDateFormat.format(beginUsedDate));
-        return chargingPileSpecificInfoVO;
+        resultVO.setCanUsedTime(simpleDateFormat.format(beginUsedDate));
+        return new Response().setCode(200).setResultVO(resultVO);
         //类名和对象名一样，会让人分不清这是成员方法还是静态方法
     }
 }//标记java包为java代码所在地 然后重新导入pom文件就可以了
