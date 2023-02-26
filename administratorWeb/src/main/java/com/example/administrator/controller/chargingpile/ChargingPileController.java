@@ -1,7 +1,7 @@
 package com.example.administrator.controller.chargingpile;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.Response;
+import com.example.administrator.annotations.VerifierUser;
 import com.example.administrator.domain.action.DeleteResultVO;
 import com.example.administrator.domain.action.InsertOrUpdateResultVO;
 import com.example.administrator.domain.chargingpile.ChargingPileBaseInfoListVO;
@@ -10,8 +10,11 @@ import com.example.administrator.domain.chargingpile.ChargingPileSpecificInfoVO;
 import com.example.constSetting.DateConsts;
 import com.example.pojo.chargingpile.ChargingPile;
 import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.pojo.user.User;
 import com.example.service.chargingpile.ChargingPileService;
 import com.example.service.parkingplace.ParkingPlaceService;
+import com.example.utils.BaseUtils;
+import com.example.utils.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,9 +41,13 @@ public class ChargingPileController {
 
     @RequestMapping("/charging_pile/list")
     public Response chargingPileList(
+            @VerifierUser User loginUser,
             @RequestParam(name = "serialNumber", required = false) String serialNumber,
             @RequestParam(name = "page") Integer page,
             @RequestParam(name = "place", required = false) String place) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
 
         log.info("接收到请求");
         if (serialNumber != null) {
@@ -56,7 +63,7 @@ public class ChargingPileController {
             ChargingPileBaseInfoListVO resultVO = new ChargingPileBaseInfoListVO().setTotal(chargingPileService.getTotalCountForAdministrator(serialNumber, place)).setPageSize(5);
             String resultJson = JSONObject.toJSONString(resultVO);
             //异常处理规
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
 
         }
         //mapper层已经校验过了，所有数据都有效
@@ -95,11 +102,16 @@ public class ChargingPileController {
         resultVO.setChargingPiles(chargingPileBaseInfoVOList);
         resultVO.setPageSize(5);
         resultVO.setTotal(chargingPileService.getTotalCountForAdministrator(serialNumber, place));
-        return new Response().setCode(200).setResultVO(resultVO);
+        return new Response().setCode(200).setResult(resultVO);
     }
 
     @RequestMapping("/charging_pile/info")
-    public Response chargingPileInfo(@RequestParam(name = "id") BigInteger id) {
+    public Response chargingPileInfo(
+            @VerifierUser User loginUser,
+            @RequestParam(name = "id") BigInteger id) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
 
         // return null;
         ChargingPile entity = chargingPileService.extractById(id);
@@ -137,14 +149,18 @@ public class ChargingPileController {
         resultVO.setCreateTime(format.format(new Date(entity.getCreateTime() * 1000L)));
         resultVO.setUpdateTime(format.format(new Date(entity.getUpdateTime() * 1000L)));
         resultVO.setIsDeleted(entity.getIsDeleted() == 0 ? false : true);
-        return new Response().setCode(200).setResultVO(resultVO);
+        return new Response().setCode(200).setResult(resultVO);
     }
 
     @RequestMapping("/charging_pile/insert")
-    public Response chargingPileInsert(@RequestParam(name = "serialNumber") String serialNumber,
-                                       @RequestParam(name = "row") Integer row, @RequestParam(name = "col") Integer col, @RequestParam(name = "parkingPlaceId") BigInteger parkingPlaceId, @RequestParam(name = "beginUsedTime") String beginUsedTime, @RequestParam(name = "chargingType") Integer chargingType,
-                                       @RequestParam(name = "photoUrlList") String photoUrlList, @RequestParam(name = "price") BigInteger price, @RequestParam(name = "power") Integer power, @RequestParam(name = "tag") String tag) {
+    public Response chargingPileInsert(
+            @VerifierUser User loginUser, @RequestParam(name = "serialNumber") String serialNumber,
+            @RequestParam(name = "row") Integer row, @RequestParam(name = "col") Integer col, @RequestParam(name = "parkingPlaceId") BigInteger parkingPlaceId, @RequestParam(name = "beginUsedTime") String beginUsedTime, @RequestParam(name = "chargingType") Integer chargingType,
+            @RequestParam(name = "photoUrlList") String photoUrlList, @RequestParam(name = "price") BigInteger price, @RequestParam(name = "power") Integer power, @RequestParam(name = "tag") String tag) {
 
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         log.info("已经接收到insert请求");
         //要是没有查到，会直接返回null
         ParkingPlace parkingPlace = parkingPlaceService.extractById(parkingPlaceId);
@@ -153,7 +169,7 @@ public class ChargingPileController {
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                     .setErrorMessage("failed to insert ,can not find parkingPlace corresponding to parkingPlaceId parameter")
                     .setIsSuccessed(false);
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
         }
         BigInteger resultId;
         try {
@@ -161,26 +177,30 @@ public class ChargingPileController {
         } catch (Exception exception) {
             log.error(exception.toString());
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setErrorMessage("insert failed" + exception.getMessage()).setIsSuccessed(false);
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
         }
         InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setId(resultId);
-        return new Response().setCode(200).setResultVO(resultVO);
+        return new Response().setCode(200).setResult(resultVO);
 
     }
 
     @RequestMapping("/charging_pile/update")
-    public Response chargingPileUpdate(@RequestParam(name = "id") BigInteger id, @RequestParam(name = "serialNumber", required = false) String serialNumber,
-                                       @RequestParam(name = "canUsedTime", required = false) String canUsedTime,
-                                       @RequestParam(name = "row", required = false) Integer row, @RequestParam(name = "col", required = false) Integer col, @RequestParam(name = "parkingPlaceId", required = false) BigInteger parkingPlaceId, @RequestParam(name = "beginUsedTime", required = false) String beginUsedTime, @RequestParam(name = "chargingType", required = false) Integer chargingType,
-                                       @RequestParam(name = "price", required = false) BigInteger price, @RequestParam(name = "power", required = false) Integer power, @RequestParam(name = "photoUrlList", required = false) String photoUrlList, @RequestParam(name = "tag", required = false) String tag) {
+    public Response chargingPileUpdate(
+            @VerifierUser User loginUser, @RequestParam(name = "id") BigInteger id, @RequestParam(name = "serialNumber", required = false) String serialNumber,
+            @RequestParam(name = "canUsedTime", required = false) String canUsedTime,
+            @RequestParam(name = "row", required = false) Integer row, @RequestParam(name = "col", required = false) Integer col, @RequestParam(name = "parkingPlaceId", required = false) BigInteger parkingPlaceId, @RequestParam(name = "beginUsedTime", required = false) String beginUsedTime, @RequestParam(name = "chargingType", required = false) Integer chargingType,
+            @RequestParam(name = "price", required = false) BigInteger price, @RequestParam(name = "power", required = false) Integer power, @RequestParam(name = "photoUrlList", required = false) String photoUrlList, @RequestParam(name = "tag", required = false) String tag) {
         log.info("已经接收到update请求");
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         //要是没有查到，会直接返回null
         ChargingPile chargingPile = chargingPileService.extractById(id);
         if (chargingPile == null) {
             String errorMessage = "fail to update,no such id ,";
             log.error(errorMessage);
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setErrorMessage(errorMessage).setIsSuccessed(false);
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
 
         }
         if (parkingPlaceId != null) {
@@ -191,7 +211,7 @@ public class ChargingPileController {
                         .setErrorMessage("failed to update ,can not find parkingPlace corresponding to parkingPlaceId parameter")
                         .setIsSuccessed(false);
                 String resultJson = JSONObject.toJSONString(resultVO);
-                return new Response().setCode(4010).setResultVO(resultVO);
+                return new Response().setCode(4010).setResult(resultVO);
             }
         }
 
@@ -200,22 +220,25 @@ public class ChargingPileController {
         } catch (Exception exception) {
             log.error(exception.getMessage());
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setErrorMessage("update failed" + exception.getMessage()).setIsSuccessed(false);
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
 
         }
         InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setId(id).setIsSuccessed(true);
-        return new Response().setCode(200).setResultVO(resultVO);
+        return new Response().setCode(200).setResult(resultVO);
     }
 
     @RequestMapping("/charging_pile/delete")
-    public Response chargingPileDelete(@RequestParam(name = "id") BigInteger id) {
+    public Response chargingPileDelete(@VerifierUser User loginUser, @RequestParam(name = "id") BigInteger id) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         int affectedRows = 0;
         try {
             affectedRows = chargingPileService.delete(id);//&useAffectedRows=true
         } catch (Exception exception) {
             log.error("delete failed " + exception.getMessage());
             DeleteResultVO resultVO = new DeleteResultVO().setIsSuccessed(false).setErrorMessage("delete failed " + exception.getMessage());
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
         }
         if (affectedRows == 0) {
             log.error("failed to delete, can not find charging_pile corresponding to id ");
@@ -223,16 +246,19 @@ public class ChargingPileController {
                     .setErrorMessage("failed to delete, can not find charging_pile corresponding to id ")
                     .setIsSuccessed(false);
             String resultJson = JSONObject.toJSONString(resultVO);
-            return new Response().setCode(4010).setResultVO(resultVO);
+            return new Response().setCode(4010).setResult(resultVO);
         }
         DeleteResultVO resultVO = new DeleteResultVO().setIsSuccessed(true);
-        return new Response().setCode(200).setResultVO(resultVO);
+        return new Response().setCode(200).setResult(resultVO);
     }
 
     @RequestMapping("/charging_pile/addPhotoUrl")
-    public InsertOrUpdateResultVO chargingPileAddPhotoUrl(@RequestParam(name = "id") BigInteger id, @RequestParam(name = "url") String url) {
-
+    public Response chargingPileAddPhotoUrl(@VerifierUser User loginUser, @RequestParam(name = "id") BigInteger id, @RequestParam(name = "url") String url) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         chargingPileService.addPhotoUrl(id, url);
-        return new InsertOrUpdateResultVO().setId(id).setIsSuccessed(true);
+        InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setId(id).setIsSuccessed(true);
+        return new Response(200, resultVO);
     }
 }

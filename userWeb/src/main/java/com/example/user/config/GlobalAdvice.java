@@ -1,7 +1,7 @@
 package com.example.user.config;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.Response;
+import com.example.utils.Response;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,18 +20,18 @@ public class GlobalAdvice {
             Response response = new Response();
             for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
                 if (entry.getKey().equals("code")) {
-                    response.addCodeAndMsgByCode((int) entry.getValue());
+                    response.setCodeAndMsgByCode((int) entry.getValue());
                 } else {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("resultVO", entry.getValue());
-                    response.setResultVO(map);
+                    response.setResult(map);
 
                 }
 
             }
             return response;
         } else {
-            return new Response().addCodeAndMsgByCode(4011);
+            return new Response().setCodeAndMsgByCode(4011);
         }
 
     }

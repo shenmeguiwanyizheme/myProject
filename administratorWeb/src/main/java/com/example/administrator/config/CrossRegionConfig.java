@@ -6,6 +6,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 public class CrossRegionConfig {
     //mall的项目代码源码
@@ -13,8 +16,10 @@ public class CrossRegionConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         //允许所有域名进行跨域调用
-        config.addAllowedOriginPattern("*");
+        List<String> allowedOriginPatterns = new ArrayList<>();
         //允许跨越发送cookie
+        allowedOriginPatterns.add("前端网页的地址");
+        config.setAllowedOrigins(allowedOriginPatterns);
         config.setAllowCredentials(true);
         //放行全部原始头信息
         config.addAllowedHeader("*");

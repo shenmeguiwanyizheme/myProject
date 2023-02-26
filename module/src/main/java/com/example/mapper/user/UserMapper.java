@@ -14,6 +14,9 @@ public interface UserMapper {
     @Select("select * from user where id=#{id}")
     User extractById(@Param("id") BigInteger id);
 
+    @Select("select * from user where id=#{id} and is_deleted=0")
+    User getByUsername(@Param("username") String username);
+
     @Select("select * from user where username =#{username}")
     User extractByUsername(@Param("username") String username);
 

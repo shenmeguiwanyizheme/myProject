@@ -13,7 +13,6 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 
 @EnableAspectJAutoProxy(exposeProxy = true)
 @SpringBootTest
@@ -39,13 +38,15 @@ class AdministratorWebApplicationTests {
     @Test
         //@Transactional(isolation = Isolation.READ_COMMITTED)
     void contextLoads() {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("code", "666");
-        String json = JSONObject.toJSONString(map);
-        System.out.println(json);
-        JSONObject jsonObject = JSON.parseObject(json);
-        jsonObject.entrySet();
-        
+//        HashMap<String, String> map = new HashMap<>();
+//        map.put("code", "666");
+//        String json = JSONObject.toJSONString(map);
+//        System.out.println(json);
+//        JSONObject jsonObject = JSON.parseObject(json);
+//        jsonObject.entrySet();
+        String S = "123" + System.getProperty("line.separator") + "456";
+        System.out.println(S);
+
     }
 
 

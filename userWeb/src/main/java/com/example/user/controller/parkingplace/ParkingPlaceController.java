@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +22,8 @@ public class ParkingPlaceController {
     private ParkingPlaceService parkingPlaceService;
 
     @RequestMapping("/parking_place/list")
-    public ParkingPlaceBaseInfoListVO parkingPlaceList(@RequestParam("page") Integer page) {
+    public ParkingPlaceBaseInfoListVO parkingPlaceList(@RequestParam("token") String token, @RequestParam("page") Integer page
+            , HttpServletRequest request, HttpServletResponse response) {
         ParkingPlaceBaseInfoListVO resultVO = new ParkingPlaceBaseInfoListVO();
         List<ParkingPlace> parkingPlaceList = parkingPlaceService.getListForUser(page, 5, null);
         if (parkingPlaceList.size() == 0) {
@@ -32,6 +37,11 @@ public class ParkingPlaceController {
                 ofVo.setLocation(parkingPlace.getLocation());
                 list.add(ofVo);
             }
+        }
+        try {
+            request.getRequestDispatcher("/parking_place/list").forward(request, response);
+        } catch (ServletException e) {
+        } catch (IOException e) {
         }
         return resultVO;
     }

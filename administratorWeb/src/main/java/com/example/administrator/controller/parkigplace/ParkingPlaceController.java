@@ -1,12 +1,15 @@
 package com.example.administrator.controller.parkigplace;
 
-import com.example.Response;
+import com.example.administrator.annotations.VerifierUser;
 import com.example.administrator.domain.action.DeleteResultVO;
 import com.example.administrator.domain.action.InsertOrUpdateResultVO;
 import com.example.administrator.domain.parkingplace.ParkingPlaceBaseInfoListVO;
 import com.example.administrator.domain.parkingplace.ParkingPlaceSpecificInfoVO;
 import com.example.pojo.parkingplace.ParkingPlace;
+import com.example.pojo.user.User;
 import com.example.service.parkingplace.ParkingPlaceService;
+import com.example.utils.BaseUtils;
+import com.example.utils.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +27,20 @@ public class ParkingPlaceController {
     ParkingPlaceService parkingPlaceService;
 
     @RequestMapping("/parking_place/insert")
-    public InsertOrUpdateResultVO parkingPlaceInsert(@RequestParam("location") String location) {
+    public Response parkingPlaceInsert(@VerifierUser User loginUser, @RequestParam("location") String location) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         BigInteger id = parkingPlaceService.insert(location);
-        return new InsertOrUpdateResultVO().setId(id).setIsSuccessed(true);
+        InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO().setId(id).setIsSuccessed(true);
+        return new Response(200, resultVO);
     }
 
     @RequestMapping("/parking_place/update")
-    public Response parkingPlaceUpdate(@RequestParam("id") BigInteger id, @RequestParam("location") String location) {
+    public Response parkingPlaceUpdate(@VerifierUser User loginUser, @RequestParam("id") BigInteger id, @RequestParam("location") String location) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         try {
 
             ParkingPlace parkingPlace = parkingPlaceService.extractById(id);
@@ -40,38 +50,48 @@ public class ParkingPlaceController {
                 InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                         .setIsSuccessed(false)
                         .setErrorMessage(errorMessage);
-                return new Response().setCode(4010).setResultVO(resultVO);
+                return new Response().setCode(4010).setResult(resultVO);
             }
             parkingPlaceService.update(id, location);
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                     .setId(id)
                     .setIsSuccessed(true);
-            return new Response().setCode(200).setResultVO(resultVO);
+            return new Response().setCode(200).setResult(resultVO);
         } catch (Exception exception) {
             InsertOrUpdateResultVO resultVO = new InsertOrUpdateResultVO()
                     .setErrorMessage("update failed" + exception.getMessage())
                     .setIsSuccessed(false);
-            return new Response().setCode(6999).setResultVO(resultVO);
+            return new Response().setCode(6999).setResult(resultVO);
         }
         //异常处理还没做
     }
+    
 
     @RequestMapping("/parking_place/delete")
-    public DeleteResultVO parkingPlaceDelete(@RequestParam("id") BigInteger id) {
+    public Response parkingPlaceDelete(@VerifierUser User loginUser, @RequestParam("id") BigInteger id) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         int affectedRows = parkingPlaceService.delete(id);
         if (affectedRows == 0) {
-            return new DeleteResultVO().setErrorMessage("delete failed").setIsSuccessed(false);
+            DeleteResultVO resultVO = new DeleteResultVO().setErrorMessage("delete failed").setIsSuccessed(false);
+            return new Response(4004, resultVO);
         }
-        return new DeleteResultVO().setIsSuccessed(true);
+        return new Response(200);
     }
 
 
     @RequestMapping("/parking_place/list")
-    public ParkingPlaceBaseInfoListVO parkingPlaceList(@RequestParam("page") Integer page) {
+    public Response parkingPlaceList(@VerifierUser User loginUser, @RequestParam("page") Integer page) {
+        if (BaseUtils.isEmpty(loginUser)) {
+            return new Response(4004);
+        }
         final int pageSize = 5;
         List<ParkingPlace> parkingPlaceList = parkingPlaceService.getListForAdministrator(page, pageSize, null);
         List<ParkingPlaceSpecificInfoVO> resultVO = new ArrayList<>();
-        if (parkingPlaceList.size() == 0) return new ParkingPlaceBaseInfoListVO().setParkingPlaces(resultVO);
+        if (parkingPlaceList.size() == 0) {
+            return new Response(4010);
+        }
         for (ParkingPlace parkingPlace : parkingPlaceList) {
             ParkingPlaceSpecificInfoVO sp = new ParkingPlaceSpecificInfoVO();
             sp.setId(parkingPlace.getId());
@@ -82,7 +102,9 @@ public class ParkingPlaceController {
             resultVO.add(sp);
         }
         int total = parkingPlaceService.getTotalCountForAdministrator(null);
-        return new ParkingPlaceBaseInfoListVO().setParkingPlaces(resultVO).setTotal(total).setPageSize(5);
+        ParkingPlaceBaseInfoListVO parkingPlaceBaseInfoListVO = new ParkingPlaceBaseInfoListVO().setParkingPlaces(resultVO).setTotal(total).setPageSize(5);
+        return new Response(200, parkingPlaceBaseInfoListVO);
+
     }
 }
 //难点

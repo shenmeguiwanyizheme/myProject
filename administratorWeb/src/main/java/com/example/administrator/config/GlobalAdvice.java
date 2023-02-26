@@ -2,10 +2,9 @@ package com.example.administrator.config;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.example.Response;
+import com.example.utils.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import java.util.Map;
 @RestControllerAdvice(basePackages = "com.example")
 @Slf4j
 public class GlobalAdvice {
-    @RequestMapping(value = {"${server.error.path:${error.path:/error}}", "/0"}, produces = {"text/html"})
     @ExceptionHandler(value = RuntimeException.class)
     public Response runtimeExceptionGlobalAdvice(RuntimeException exception) {//由spring MVC自动填充参数
         log.error("出错啦");
@@ -29,7 +27,7 @@ public class GlobalAdvice {
             } else {
                 HashMap<String, Object> map = (HashMap<String, Object>) entry.getValue();
                 if (map.size() != 0) {
-                    response.setResultVO(entry.getValue());
+                    response.setResult(entry.getValue());
                 }
             }
         }
